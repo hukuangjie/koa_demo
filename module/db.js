@@ -1,4 +1,5 @@
 let MongoClient = require("mongodb").MongoClient
+let ObjectID = require("mongodb").ObjectID
 
 let Config = require('./config.js')
 
@@ -22,21 +23,19 @@ class Db {
                 MongoClient.connect(Config.dbUrl, {
                     useNewUrlParser: true,
                     useUnifiedTopology: true //这个即是报的警告
-                }).then((err, client) => {
-                    if (err) {
-                        reject(err)
-                    } else {
-                        let db = client.db(Config.dbName)
-                        this.dbClient = db
-                        resolve(this.dbClient)
-                    }
+                }).then(client => {
+                    let db = client.db(Config.dbName)
+                    this.dbClient = db
+                    resolve(this.dbClient)
+                }).catch(err => {
+                    reject(err)
                 })
             } else {
                 resolve(this.dbClient)
             }
         })
     }
-
+    // 查找
     find(collectionName, json) {
         return new Promise((resolve, reject) => {
             this.connect().then((db) => {
@@ -52,11 +51,54 @@ class Db {
 
         })
     }
-    insert() {
+    // 插入
+    insert(collectionName, json) {
 
+        return new Promise((resolve, reject) => {
+            this.connect().then((db) => {
+                db.collection(collectionName).insertOne(json, (err, result) => {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                })
+            })
+        })
     }
-    update() {}
+    // 更新
+    update(collectionName, json1, json2) {
+        return new Promise((resolve, reject) => {
+            this.connect().then((db) => {
+                db.collection(collectionName).updateOne(json1, {
+                    $set: json2
+                }, (err, result) => {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                })
+            })
+        })
+    }
 
+    // 删除
+    remove(collectionName, json) {
+        return new Promise((resolve, reject) => {
+            this.connect().then((db) => {
+                db.collection(collectionName).removeOne(json, (err, result) => {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(result)
+                })
+
+            })
+        })
+    }
+    getObjectID(id) {
+        // mongodb里面查询 _id 把字符串转换成对象
+        return new ObjectID(id)
+    }
 }
 
 module.exports = Db.getInstance()
