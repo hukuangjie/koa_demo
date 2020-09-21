@@ -1,19 +1,15 @@
 var router = require('koa-router')()
+var user = require('./admin/user')
+var foucs = require('./admin/foucs')
+var newscate = require('./admin/newscate')
 
-router.get('/', (ctx) => {
+// 配置admin的子路由 ，层级路由
+router.get('/',async (ctx) => {
     ctx.body = '后台管理系统首页'
 })
 
-router.get('/user', (ctx) => {
-    ctx.body = '用户管理'
-})
+router.use('/user', user)
+router.use('/foucs', foucs)
+router.use('/newscate', newscate)
 
-router.get('/focus', (ctx) => {
-    ctx.body = '轮播图管理'
-})
-
-router.get('/news', (ctx) => {
-    ctx.body = '新闻管理'
-})
-
-module.exports = router
+module.exports = router.routes()
